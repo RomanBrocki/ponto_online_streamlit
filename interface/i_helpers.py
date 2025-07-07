@@ -1,5 +1,7 @@
 from datetime import datetime
+import pytz
 
+fuso_brasil = pytz.timezone("America/Sao_Paulo")
 
 def obter_data_formatada() -> str:
     """
@@ -8,7 +10,7 @@ def obter_data_formatada() -> str:
     Returns:
         str: Data atual no formato 'dd/mm/aaaa'.
     """
-    return datetime.now().strftime("%d/%m/%Y")
+    return datetime.now(fuso_brasil).strftime("%d/%m/%Y")
 
 
 def obter_hora_formatada() -> str:
@@ -18,7 +20,7 @@ def obter_hora_formatada() -> str:
     Returns:
         str: Hora atual no formato 'HH:MM'.
     """
-    return datetime.now().strftime("%H:%M:%S")
+    return datetime.now(fuso_brasil).strftime("%H:%M:%S")
 
 
 def validar_campo_preenchido(valor: str) -> bool:
