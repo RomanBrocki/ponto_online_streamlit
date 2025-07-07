@@ -1,5 +1,6 @@
-# supabase/headers.py
 """Geração de headers padrão para requisições à API REST do Supabase."""
+
+from typing import Dict
 
 def montar_headers(api_key: str) -> dict:
     """

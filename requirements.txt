@@ -1,0 +1,7 @@
+streamlit
+requests
+reportlab
+pandas
+numpy
+python-dateutil
+matplotlib

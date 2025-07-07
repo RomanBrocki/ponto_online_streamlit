@@ -1,7 +1,6 @@
-# supabase/config.py
 """Montagem das credenciais completas de acesso ao Supabase com base na senha digitada."""
-
-from supabase.secrets import URL_INICIO, URL_FIM, KEY_FIXA
+from interface import i_vars
+from supabase.s_secrets import URL_INICIO, URL_FIM, KEY_FIXA
 
 def montar_credenciais(senha: str) -> tuple[str, str]:
     """

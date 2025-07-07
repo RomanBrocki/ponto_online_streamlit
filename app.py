@@ -1,53 +1,51 @@
-# app.py
-"""Interface principal do aplicativo de ponto eletrônico."""
-
 import streamlit as st
-from supabase.config import montar_credenciais
-from interface.vars import LOGINS_VALIDOS
+from interface.i_vars import LOGINS_VALIDOS, CARGA_HORARIA_PADRAO
+from interface.i_visuais import exibir_cabecalho, exibir_mensagem_boas_vindas, aplicar_estilo_background
+from interface.i_login import exibir_tela_login
+from interface.i_empregada import exibir_interface_empregada
+from interface.i_admin import exibir_interface_admin
 
-st.set_page_config(page_title="Ponto Eletrônico", layout="centered")
+from interface.i_helpers import obter_data_formatada
+
+# === Main ===
 
 def main():
-    st.title("📋 Ponto Eletrônico da Casa")
+    """
+    Função principal do aplicativo Streamlit.
 
-    # Campos de login e senha
-    login = st.text_input("Nome de acesso").strip().lower()
-    senha = st.text_input("Senha de acesso", type="password").strip().lower()
+    - Configura o layout e o título da página.
+    - Exibe a tela de login caso o usuário não esteja autenticado.
+    - Após login bem-sucedido, exibe o cabeçalho, mensagem de boas-vindas e a data atual.
+    - Redireciona para a interface da empregada ou do administrador, conforme o perfil.
+    - Exibe botão de logout para encerrar a sessão.
+    """
+    st.set_page_config(page_title="Ponto Online", layout="centered")
+    aplicar_estilo_background()
 
-    # Validação básica
-    if not login or not senha:
-        st.warning("Informe seu nome e senha.")
+    if "autenticado" not in st.session_state:
+        st.session_state["autenticado"] = False
+
+    if not st.session_state["autenticado"]:
+        exibir_tela_login()
         return
 
-    if login not in LOGINS_VALIDOS:
-        st.error("Login inválido.")
-        return
+    # Após login bem-sucedido
+    exibir_cabecalho()
+    perfil = st.session_state["perfil"]
+    exibir_mensagem_boas_vindas(perfil)
+    st.markdown(f"📅 **Hoje é {obter_data_formatada()}**")
+    st.markdown("---")
 
-    try:
-        url, key = montar_credenciais(senha)
-    except Exception as e:
-        st.error("Erro ao montar credenciais de acesso.")
-        return
+    if perfil == "empregada":
+        exibir_interface_empregada()
+    elif perfil == "admin":
+        exibir_interface_admin()
 
-    # Salva na sessão
-    st.session_state.perfil = LOGINS_VALIDOS[login]
-    st.session_state.login = login
-    st.session_state.url = url
-    st.session_state.key = key
+    st.markdown("---")
+    if st.button("🚪 Sair"):
+        st.session_state.clear()
+        st.rerun()
 
-    # Roteia para a interface correta
-    if st.session_state.perfil == "empregada":
-        interface_empregada()
-    elif st.session_state.perfil == "admin":
-        interface_admin()
-
-def interface_empregada():
-    """Interface de marcação de ponto para a empregada."""
-    pass
-
-def interface_admin():
-    """Interface de visualização e relatórios para o administrador."""
-    pass
 
 if __name__ == "__main__":
     main()
