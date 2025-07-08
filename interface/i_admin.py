@@ -50,9 +50,20 @@ def exibir_interface_admin():
             nome_arquivo = f"relatorio_{empregado}_{mes_str}.pdf"
             pdf_bytes = gerar_pdf_relatorio({"registros": registros}, nome_arquivo)
             if pdf_bytes:
-                st.download_button("📥 Baixar PDF", data=pdf_bytes, file_name=nome_arquivo, mime="application/pdf")
+                st.session_state["pdf_bytes"] = pdf_bytes
+                st.session_state["nome_arquivo_pdf"] = nome_arquivo
             else:
                 st.error("Erro ao gerar o PDF.")
+
+        if "pdf_bytes" in st.session_state:
+            st.download_button(
+                label="📥 Baixar PDF",
+                data=st.session_state["pdf_bytes"],
+                file_name=st.session_state["nome_arquivo_pdf"],
+                mime="application/pdf",
+                key="botao_download_pdf"
+            )
+
 
     with col2:
         if st.button("✏️ Editar Registros"):
