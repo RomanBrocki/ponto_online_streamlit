@@ -141,6 +141,20 @@ def exibir_interface_empregada():
             st.rerun()
         else:
             st.error("Erro ao registrar o ponto.")
+    # Exibe marcações já feitas hoje
+    if registro:
+        st.markdown("#### 🕒 Marcações de hoje:")
+        campos_exibicao = {
+            "entrada": "🟢 Entrada",
+            "saida_almoco": "🍽️ Saída para almoço",
+            "volta_almoco": "🔄 Retorno do almoço",
+            "saida_final": "🔴 Saída final"
+        }
+        for campo, label in campos_exibicao.items():
+            valor = registro.get(campo)
+            if valor:
+                hora_formatada = ":".join(valor.strip().split(":")[:2])
+                st.markdown(f"- {label}: **{hora_formatada}**")
 
     # Exibe botão apenas se houver campo disponível
     if proximo_campo:
