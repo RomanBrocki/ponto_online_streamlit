@@ -55,19 +55,20 @@ def exibir_interface_admin():
             else:
                 st.error("Erro ao gerar o PDF.")
 
-        if "pdf_bytes" in st.session_state:
-            st.download_button(
-                label="📥 Baixar PDF",
-                data=st.session_state["pdf_bytes"],
-                file_name=st.session_state["nome_arquivo_pdf"],
-                mime="application/pdf",
-                key="botao_download_pdf"
-            )
-
-
     with col2:
         if st.button("✏️ Editar Registros"):
             st.session_state["modo_edicao"] = True
+
+    # Fora das colunas — persistente e confiável no mobile
+    if "pdf_bytes" in st.session_state:
+        st.download_button(
+            label="📥 Baixar PDF",
+            data=st.session_state["pdf_bytes"],
+            file_name=st.session_state["nome_arquivo_pdf"],
+            mime="application/pdf",
+            key="botao_download_pdf"
+        )
+
 
     if st.session_state.get("modo_edicao"):
         st.markdown("---")
