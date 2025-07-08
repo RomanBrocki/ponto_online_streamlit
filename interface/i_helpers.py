@@ -10,7 +10,7 @@ def obter_data_formatada() -> str:
     Returns:
         str: Data atual no formato 'dd/mm/aaaa'.
     """
-    return datetime.now(fuso_brasil).strftime("%d/%m/%Y")
+    return datetime.now(fuso_brasil).strftime("%Y-%m-%d")
 
 
 def obter_hora_formatada() -> str:
