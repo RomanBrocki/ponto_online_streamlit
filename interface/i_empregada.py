@@ -77,16 +77,16 @@ def exibir_interface_empregada():
                 return ":".join(horario_str.strip().split(".")[0].split(":")[:2])
 
             entrada = normalizar(registro["entrada"])
-            entrada_dt = datetime.strptime(f"{data_hoje} {entrada}", "%d/%m/%Y %H:%M")
+            entrada_dt = datetime.strptime(f"{data_hoje} {entrada}", "%Y-%m-%d %H:%M")
 
             saida_almoco_dt = volta_almoco_dt = None
             if registro.get("saida_almoco"):
                 saida_almoco = normalizar(registro["saida_almoco"])
-                saida_almoco_dt = datetime.strptime(f"{data_hoje} {saida_almoco}", "%d/%m/%Y %H:%M")
+                saida_almoco_dt = datetime.strptime(f"{data_hoje} {saida_almoco}", "%Y-%m-%d %H:%M")
 
             if registro.get("volta_almoco"):
                 volta_almoco = normalizar(registro["volta_almoco"])
-                volta_almoco_dt = datetime.strptime(f"{data_hoje} {volta_almoco}", "%d/%m/%Y %H:%M")
+                volta_almoco_dt = datetime.strptime(f"{data_hoje} {volta_almoco}", "%Y-%m-%d %H:%M")
 
             if saida_almoco_dt and not volta_almoco_dt:
                 retorno_sugerido = saida_almoco_dt + timedelta(hours=1)
