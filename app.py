@@ -35,7 +35,9 @@ def main():
     exibir_cabecalho()
     perfil = st.session_state["perfil"]
     exibir_mensagem_boas_vindas(perfil)
-    st.markdown(f"📅 **Hoje é {obter_data_formatada()}**")
+    data_iso = obter_data_formatada()
+    data_legivel = datetime.strptime(data_iso, "%Y-%m-%d").strftime("%d/%m/%Y")
+    st.markdown(f"📅 Hoje é {data_legivel}")
     st.markdown("---")
 
     if perfil == "empregada":
