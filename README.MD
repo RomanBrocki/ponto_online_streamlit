@@ -1,108 +1,126 @@
-# 🕒 Ponto Online para Empregadas Domésticas
+# 🕒 Ponto Online Residencial
 
-Este é um aplicativo de ponto eletrônico simples, desenvolvido em **Python com Streamlit**, voltado ao **registro e acompanhamento da jornada de trabalho de empregadas domésticas**. Ele permite registrar horários, calcular automaticamente o saldo de horas extras ou déficit, e gerar relatórios mensais em PDF para controle.
-
----
-
-## 📌 Objetivo
-
-Facilitar o controle de jornada de empregadas domésticas de forma simples, acessível e segura — diretamente pelo navegador, com acesso por login e senha, sem necessidade de infraestrutura complexa.
+Um aplicativo simples de ponto eletrônico para uso residencial, feito com [Streamlit](https://streamlit.io/) e [Supabase](https://supabase.com/). O objetivo é permitir que uma empregada doméstica registre seus horários de forma segura e que os administradores acompanhem as jornadas e gerem relatórios mensais.
 
 ---
 
-## ⚙️ Funcionalidades
+## 🌟 Funcionalidades
 
-### 👤 **Perfil Empregada**
-- Marcação de ponto em quatro etapas:
-  - 🟢 Entrada
-  - 🍽️ Saída para almoço
-  - 🔄 Retorno do almoço
-  - 🔴 Saída final
-- Sugestão automática do próximo horário com base:
-  - No tempo decorrido desde o início da jornada
-  - No tempo de almoço já computado
-- Exibição do **saldo mensal de horas extras ou horas faltantes**
-- Preenchimento automático da data e hora atual
-- Interface simplificada, voltada para uso no celular
+### Para a empregada
 
----
+* Registro de ponto do **dia atual**:
 
-### 🛠️ **Perfil Administrador**
-- Seleção de mês e ano para consulta
-- Visualização completa dos registros de uma empregada
-- Edição detalhada dos registros de um dia específico:
-  - Inserção e modificação de horários
-  - Marcação de faltas, feriados ou dispensas justificadas
-  - Exclusão de registros
-- Geração de **relatório mensal em PDF**, com:
-  - Tabela de registros diários
-  - Observações e saldos por dia
-  - Resumo de faltas, feriados e horas extras no mês
+  * 🟢 Entrada
+  * 🍽️ Saída para almoço
+  * 🔄 Retorno do almoço
+  * 🔴 Saída final
+* Sugestão automática de:
+
+  * Horário de retorno do almoço (após 1h)
+  * Horário de saída final (ajustado pela carga horária e intervalo real de almoço)
+* Exibição do saldo mensal de horas (positivas ou negativas)
+* Bloqueio automático após jornada completa
+* Visualização das marcações feitas no dia
+
+### Para o administrador
+
+* Consulta de registros por mês e por empregada
+* Edição e exclusão de qualquer marcação
+* Inclusão de observações como:
+
+  * Feriado
+  * Falta
+  * Dispensa Justificada
+* Geração de relatórios mensais em PDF com:
+
+  * Tabela de marcações por dia
+  * Saldos diários
+  * Resumo de horas extras, faltas e feriados
+
+### Lógicas internas importantes
+
+* Cada empregada pode ter **apenas um registro por data** (evita duplicidade)
+* A jornada de trabalho é considerada **completa** quando os quatro campos estão preenchidos
+* O saldo mensal considera:
+
+  * Dias úteis
+  * Horas efetivamente registradas
+  * Observações de justificativa ou falta
 
 ---
 
 ## 🔐 Login e Segurança
 
-O sistema usa **login e senha**, com duas funções importantes:
+### Mecanismo
 
-- **Login** identifica o perfil (`empregada` ou `admin`)
-- **Senha** é usada como fragmento secreto para compor a URL de acesso ao Supabase
+* O login é feito com:
 
-### Como funciona:
-- A URL e a chave de API **não ficam visíveis no código**
-- Durante o login, a senha digitada **completa dinamicamente a URL**
-  - Exemplo: `https://crvqo<senha>.supabase.co`
-- Isso permite manter o repositório público sem risco de vazamento de credenciais
+  * **Login**: identifica o perfil (ex: `rani`, `brocki`)
+  * **Senha**: fragmento exclusivo que completa a URL de acesso
+* Isso monta dinamicamente:
+
+  * `URL = URL_INICIO + senha + URL_FIM`
+  * `KEY = chave opcional gerada com base na senha`
+
+### Benefícios
+
+* Nenhuma credencial sensível é armazenada diretamente no repositório
+* O projeto pode ser público sem comprometer segurança
 
 ---
 
-## 🧱 Estrutura do Projeto
+## 🗃️ Estrutura da Base de Dados (Supabase)
+
+A aplicação utiliza uma tabela única chamada `ponto_eletronico` hospedada no Supabase. Ela armazena todas as marcações de ponto realizadas pelos usuários com os seguintes campos:
+
+| Campo         | Tipo | Descrição                                                            |
+| ------------- | ---- | -------------------------------------------------------------------- |
+| id            | int  | Chave primária, gerada automaticamente                               |
+| empregado     | text | Nome do empregado (ex: "rani")                                       |
+| data          | date | Data do ponto (no formato ISO, ex: 2025-07-08)                       |
+| entrada       | text | Horário de entrada (ex: "08:00:00")                                  |
+| saida\_almoco | text | Horário de saída para o almoço                                       |
+| volta\_almoco | text | Horário de retorno do almoço                                         |
+| saida\_final  | text | Horário de saída final do expediente                                 |
+| observacao    | text | Comentário opcional: "feriado", "falta", "dispensa justificada" etc. |
+
+### Regras e Garantias
+
+* 🔒 A combinação `empregado + data` deve ser única — isso é garantido pela lógica da aplicação
+* 🧠 O sistema só permite um registro por dia por empregado, seja criado pela própria empregada ou pelo administrador
+* ⏱️ Os horários são registrados sequencialmente e exibidos após preenchidos
+* 🗓️ O saldo mensal é calculado com base na jornada esperada (`CARGA_HORARIA_PADRAO`) e nas marcações efetivas do mês
+
+---
+
+## 📅 Estrutura do Projeto
 
 ```bash
 ponto_online/
-├── app.py                        # Arquivo principal com controle da navegação
+├── app.py                        # Arquivo principal do Streamlit
 │
-├── interface/                   # Interface e elementos visuais
-│   ├── i_vars.py                 # Carga horária e logins válidos
-│   ├── i_visuais.py              # Layout visual (background, título, boas-vindas)
-│   ├── i_login.py                # Tela de login e montagem de sessão
-│   ├── i_empregada.py            # Interface para marcação de ponto
-│   ├── i_admin.py                # Interface para visualização e edição dos registros
-│   └── i_helpers.py              # Funções auxiliares de data e validação
+├── interface/                   # Interface do usuário
+│   ├── i_vars.py                  # Variáveis globais (logins, carga horária)
+│   ├── i_visuais.py               # Estilos visuais (CSS, cabeçalho)
+│   ├── i_login.py                 # Tela de login
+│   ├── i_empregada.py             # Tela da empregada (marcação do dia atual)
+│   ├── i_admin.py                 # Tela administrativa (consulta, edição, PDF)
+│   └── i_helpers.py               # Funções auxiliares de data, hora, validação
 │
-├── supabase/                    # Integração com o banco Supabase
-│   ├── s_secrets.py              # Fragmentos da URL e chave pública
-│   ├── s_config.py               # Monta URL e KEY com base na senha digitada
-│   ├── s_headers.py              # Headers padrão para requisições REST
-│   └── s_utils.py                # Funções para CRUD no Supabase (GET, POST, PATCH, DELETE)
+├── supabase/                    # Integração com Supabase
+│   ├── s_secrets.py               # Fragmentos da URL/KEY
+│   ├── s_config.py                # Montagem de URL/KEY
+│   ├── s_headers.py               # Headers padrão de acesso
+│   └── s_utils.py                 # Funções de leitura, inserção, atualização e exclusão
 │
-├── relatorio/                   # Lógica de análise e geração de PDFs
-│   ├── r_utils.py                # Análise da jornada (faltas, extras, pendências)
-│   └── r_pdf_generator.py        # Geração do relatório em PDF
+├── relatorio/                   # Lógicas de análise e geração de PDF
+│   ├── r_utils.py                 # Cálculo de saldo mensal e análise por dia
+│   └── r_pdf_generator.py         # Geração de relatório mensal em PDF
 │
-├── assets/                      # Imagens e estilos adicionais (ex: fundo da página)
-│
-├── requirements.txt             # Dependências do projeto
+├── assets/                      # Imagens e estilos visuais (ex: fundo do app)
+├── requirements.txt             # Lista de dependências
 └── README.md                    # Este documento
 ```
-
----
-
-## 📦 Requisitos
-
-O projeto usa bibliotecas populares do ecossistema Python:
-
-```txt
-streamlit
-requests
-reportlab
-pandas
-numpy
-python-dateutil
-matplotlib
-```
-
-Você pode copiá-las para seu próprio `requirements.txt`.
 
 ---
 
@@ -113,10 +131,9 @@ Você pode copiá-las para seu próprio `requirements.txt`.
 git clone https://github.com/RomanBrocki/ponto_online_streamlit
 cd ponto_online
 
-# Crie e ative o ambiente virtual
+# Crie e ative a venv
 python -m venv .venv
-source .venv/bin/activate      # Linux/macOS
-# .venv\Scripts\activate       # Windows
+source .venv/bin/activate  # ou .venv\Scripts\activate no Windows
 
 # Instale as dependências
 pip install -r requirements.txt
@@ -127,16 +144,8 @@ streamlit run app.py
 
 ---
 
-## 📊 Observações Técnicas
-
-- O projeto assume uma tabela no Supabase chamada `ponto_eletronico`, com os campos:
-  - `id`, `empregado`, `data`, `entrada`, `saida_almoco`, `volta_almoco`, `saida_final`, `observacao`
-- Todos os horários são armazenados como `HH:MM:SS`
-- A autenticação é feita via chave pública (`anon key`) segura apenas para leitura/escrita controlada — sem permissões administrativas
-- Os dados são manipulados exclusivamente via **API REST**, sem SDK
-
----
-
 ## ✍️ Autor
 
-Roman Wladyslaw Brocki Neto  
+* Roman Wladyslaw Brocki Neto
+
+Este projeto foi desenvolvido com o apoio do ChatGPT, utilizado para geração de ideias, revisão de código e documentação técnica.
