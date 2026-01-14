@@ -88,7 +88,9 @@ def normalizar_horario(valor: str) -> str:
     Returns:
         str: Horário formatado como 'HH:MM'. Retorna string vazia se o valor não for válido.
     """
-    valor = valor.strip().replace(":", "")
+    if valor is None:
+        return ""
+    valor = str(valor).strip().replace(":", "")
     if not valor.isdigit():
         return ""
     if len(valor) <= 2:
@@ -137,7 +139,7 @@ def exibir_editor_data(data: date, empregado: str, url: str, headers: dict):
                 "saida_final": "🔴 Saída final"
             }.get(campo, campo)
 
-            valor_inicial = registro[campo] if registro and campo in registro else ""
+            valor_inicial = (registro.get(campo) if registro else "") or ""
             valores[campo] = st.text_input(label, valor_inicial, key=f"{campo}_{data_str}")
 
     # Campo de observação
@@ -148,11 +150,18 @@ def exibir_editor_data(data: date, empregado: str, url: str, headers: dict):
     col3, col4 = st.columns(2)
     with col3:
         if st.button("💾 Salvar", key=f"salvar_{data_str}"):
-            valores = {
-                k: normalizar_horario(v) if k != "observacao" else v
-                for k, v in valores.items()
-                if k == "observacao" or normalizar_horario(v)
-            }
+            novos = {}
+            for k, v in valores.items():
+                if k == "observacao":
+                    novos[k] = v or ""
+                    continue
+
+                hv = normalizar_horario(v)
+                if hv:
+                    novos[k] = hv
+
+            valores = novos
+
 
             sucesso = False
             if registro:
